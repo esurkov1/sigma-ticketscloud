@@ -68,40 +68,44 @@
             // Получаем параметры из URL
             const urlParams = new URLSearchParams(window.location.search);
             
-            // Базовый URL виджета TicketsCloud (замените на актуальный токен и событие)
+            // Базовый URL виджета TicketsCloud
             const baseTicketsUrl = 'https://ticketscloud.com/v1/widgets/common?token=eyJhbGciOiJIUzI1NiIsImlzcyI6InRpY2tldHNjbG91ZC5ydSIsInR5cCI6IkpXVCJ9.eyJwIjoiNjJlY2VlMDc1OWY3YmZmNjc5NDIwNDNlIn0.eI8E1bl4dCPYgM6oZzZZ5Qq1Wl9NMT4q01qw5sSf2BU&lang=ru&event=68c9fcda90a666cd062d5b26&s=1';
             
-            // Получаем uid из URL параметров или из Telegram WebApp
-            let uid = '';
-            if (isTelegram && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                // Если запущено в Telegram, берем id пользователя
-                uid = window.Telegram.WebApp.initDataUnsafe.user.id || '';
+            // Получаем user_id и start_param из Telegram WebApp
+            let userId = '';
+            let startParam = '';
+            
+            if (isTelegram && window.Telegram.WebApp.initDataUnsafe) {
+                // Получаем данные пользователя из Telegram Mini App
+                if (window.Telegram.WebApp.initDataUnsafe.user) {
+                    userId = window.Telegram.WebApp.initDataUnsafe.user.id || '';
+                }
+                
+                // Получаем параметр startapp из Telegram Mini App
+                startParam = window.Telegram.WebApp.initDataUnsafe.start_param || '';
             } else {
-                // Иначе берем из URL параметров
-                uid = urlParams.get('uid') || '';
+                // Если не в Telegram, берем из URL параметров
+                userId = urlParams.get('uid') || '';
+                startParam = urlParams.get('startapp') || '';
             }
             
-            // Собираем UTM-метки из параметров URL
-            const utmSource = urlParams.get('utm_source') || 'telegram';
-            const utmMedium = urlParams.get('utm_medium') || 'miniapp';
-            const utmCampaign = urlParams.get('utm_campaign') || '';
-            const utmContent = urlParams.get('utm_content') || '';
-            const utmTerm = urlParams.get('utm_term') || '';
+            // Устанавливаем UTM-метки по умолчанию
+            const utmSource = 'telegram';
+            const utmMedium = 'miniapp';
+            const utmContent = startParam || ''; // Используем startapp параметр как utm_content
             
             // Собираем финальный URL для виджета
             let finalUrl = baseTicketsUrl;
             
-            // Добавляем vendor_data с uid
-            if (uid) {
-                finalUrl += `&vendor_data.raw.user_id=${uid}`;
+            // Добавляем vendor_data с user_id
+            if (userId) {
+                finalUrl += `&vendor_data.raw.user_id=${userId}`;
             }
             
             // Добавляем UTM-метки
-            if (utmSource) finalUrl += `&utm_source=${utmSource}`;
-            if (utmMedium) finalUrl += `&utm_medium=${utmMedium}`;
-            if (utmCampaign) finalUrl += `&utm_campaign=${utmCampaign}`;
+            finalUrl += `&utm_source=${utmSource}`;
+            finalUrl += `&utm_medium=${utmMedium}`;
             if (utmContent) finalUrl += `&utm_content=${utmContent}`;
-            if (utmTerm) finalUrl += `&utm_term=${utmTerm}`;
             
             // Опции отображения
             const useRedirect = urlParams.get('redirect') === 'true';
@@ -110,6 +114,10 @@
                 // Если это Telegram Mini App, настраиваем интерфейс
                 window.Telegram.WebApp.ready();
                 window.Telegram.WebApp.expand();
+                
+                // Выводим в консоль данные для отладки
+                console.log('Telegram User Data:', window.Telegram.WebApp.initDataUnsafe.user);
+                console.log('Start Parameter:', window.Telegram.WebApp.initDataUnsafe.start_param);
                 
                 // Включаем возможность fullscreen для более новых версий Bot API
                 if (window.Telegram.WebApp.requestFullscreen) {
