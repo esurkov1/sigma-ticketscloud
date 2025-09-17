@@ -108,9 +108,6 @@
             finalUrl += `&utm_medium=${utmMedium}`;
             if (utmCampaign) finalUrl += `&utm_campaign=${utmCampaign}`;
             
-            // Опции отображения
-            const useRedirect = urlParams.get('redirect') === 'true';
-            
             if (isTelegram) {
                 // Если это Telegram Mini App, настраиваем интерфейс
                 window.Telegram.WebApp.ready();
@@ -130,36 +127,27 @@
                     });
                 }
                 
-                // Запрашиваем разрешение на отправку сообщений, если параметр содержит request_messages
-                if (startParam && startParam.includes('request_messages')) {
-                    // Проверяем, поддерживается ли метод requestWriteAccess
-                    if (window.Telegram.WebApp.requestWriteAccess) {
-                        window.Telegram.WebApp.requestWriteAccess(function(allowed) {
-                            if (allowed) {
-                                console.log('Пользователь разрешил отправку сообщений');
-                                // Здесь можно отправить user_id на сервер для последующей отправки сообщений
-                            } else {
-                                console.log('Пользователь отклонил разрешение на сообщения');
-                            }
-                        });
-                    }
+                // Проверяем, поддерживается ли метод requestWriteAccess
+                if (window.Telegram.WebApp.requestWriteAccess) {
+                    window.Telegram.WebApp.requestWriteAccess(function(allowed) {
+                        if (allowed) {
+                            console.log('Пользователь разрешил отправку сообщений');
+                            // Здесь можно отправить user_id на сервер для последующей отправки сообщений
+                        } else {
+                            console.log('Пользователь отклонил разрешение на сообщения');
+                        }
+                    });
                 }
             }
             
-            // Выбираем метод отображения: редирект или iframe
-            if (useRedirect) {
-                // Делаем редирект на страницу виджета
-                window.location.href = finalUrl;
-            } else {
-                // Используем iframe
-                const frame = document.getElementById('ticketsFrame');
-                frame.src = finalUrl;
-                frame.onload = function() {
-                    // Скрываем индикатор загрузки и показываем фрейм
-                    document.getElementById('loading').style.display = 'none';
-                    frame.style.display = 'block';
-                };
-            }
+            // Используем iframe
+            const frame = document.getElementById('ticketsFrame');
+            frame.src = finalUrl;
+            frame.onload = function() {
+                // Скрываем индикатор загрузки и показываем фрейм
+                document.getElementById('loading').style.display = 'none';
+                frame.style.display = 'block';
+            };
         });
     </script>
 </body>
