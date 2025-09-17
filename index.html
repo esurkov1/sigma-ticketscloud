@@ -92,7 +92,7 @@
             // Устанавливаем UTM-метки по умолчанию
             const utmSource = 'telegram';
             const utmMedium = 'miniapp';
-            const utmContent = startParam || ''; // Используем startapp параметр как utm_content
+            const utmCampaign = startParam || ''; // Используем startapp параметр как utm_campaign
             
             // Собираем финальный URL для виджета
             let finalUrl = baseTicketsUrl;
@@ -105,7 +105,7 @@
             // Добавляем UTM-метки
             finalUrl += `&utm_source=${utmSource}`;
             finalUrl += `&utm_medium=${utmMedium}`;
-            if (utmContent) finalUrl += `&utm_content=${utmContent}`;
+            if (utmCampaign) finalUrl += `&utm_campaign=${utmCampaign}`;
             
             // Опции отображения
             const useRedirect = urlParams.get('redirect') === 'true';
