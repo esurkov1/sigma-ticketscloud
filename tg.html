@@ -98,9 +98,9 @@
             // Собираем финальный URL для виджета
             let finalUrl = baseTicketsUrl;
             
-            // Добавляем vendor_data с user_id
+            // Добавляем vendor_data с user_id и soc
             if (userId) {
-                finalUrl += `&vendor_data.raw.user_id=${userId}`;
+                finalUrl += `&vendor_data.raw.user_id=${userId}&vendor_data.raw.soc=tg`;
             }
             
             // Добавляем UTM-метки
