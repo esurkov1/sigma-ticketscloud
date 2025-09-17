@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigma App - Tickets</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: #0088cc;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #ticketsFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>Загрузка билетов...</div>
+    </div>
+    
+    <iframe id="ticketsFrame" style="display:none;"></iframe>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем, запущено ли приложение в Telegram
+            const isTelegram = window.Telegram && window.Telegram.WebApp;
+            
+            // Получаем параметры из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Базовый URL виджета TicketsCloud (замените на актуальный токен и событие)
+            const baseTicketsUrl = 'https://ticketscloud.com/v1/widgets/common?token=YOUR_TOKEN_HERE&lang=ru&event=YOUR_EVENT_ID';
+            
+            // Получаем uid из URL параметров или из Telegram WebApp
+            let uid = '';
+            if (isTelegram && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                // Если запущено в Telegram, берем id пользователя
+                uid = window.Telegram.WebApp.initDataUnsafe.user.id || '';
+            } else {
+                // Иначе берем из URL параметров
+                uid = urlParams.get('uid') || '';
+            }
+            
+            // Собираем UTM-метки из параметров URL
+            const utmSource = urlParams.get('utm_source') || 'telegram';
+            const utmMedium = urlParams.get('utm_medium') || 'miniapp';
+            const utmCampaign = urlParams.get('utm_campaign') || '';
+            const utmContent = urlParams.get('utm_content') || '';
+            const utmTerm = urlParams.get('utm_term') || '';
+            
+            // Собираем финальный URL для виджета
+            let finalUrl = baseTicketsUrl;
+            
+            // Добавляем vendor_data с uid
+            if (uid) {
+                finalUrl += `&vendor_data.raw.user_id=${uid}`;
+            }
+            
+            // Добавляем UTM-метки
+            if (utmSource) finalUrl += `&utm_source=${utmSource}`;
+            if (utmMedium) finalUrl += `&utm_medium=${utmMedium}`;
+            if (utmCampaign) finalUrl += `&utm_campaign=${utmCampaign}`;
+            if (utmContent) finalUrl += `&utm_content=${utmContent}`;
+            if (utmTerm) finalUrl += `&utm_term=${utmTerm}`;
+            
+            // Опции отображения
+            const useRedirect = urlParams.get('redirect') === 'true';
+            
+            if (isTelegram) {
+                // Если это Telegram Mini App, настраиваем интерфейс
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+                
+                // Включаем возможность fullscreen для более новых версий Bot API
+                if (window.Telegram.WebApp.requestFullscreen) {
+                    // Устанавливаем кнопку в верхнем меню для полноэкранного режима
+                    window.Telegram.WebApp.MainButton.setText('На весь экран');
+                    window.Telegram.WebApp.MainButton.show();
+                    window.Telegram.WebApp.MainButton.onClick(function() {
+                        window.Telegram.WebApp.requestFullscreen();
+                    });
+                }
+            }
+            
+            // Выбираем метод отображения: редирект или iframe
+            if (useRedirect) {
+                // Делаем редирект на страницу виджета
+                window.location.href = finalUrl;
+            } else {
+                // Используем iframe
+                const frame = document.getElementById('ticketsFrame');
+                frame.src = finalUrl;
+                frame.onload = function() {
+                    // Скрываем индикатор загрузки и показываем фрейм
+                    document.getElementById('loading').style.display = 'none';
+                    frame.style.display = 'block';
+                };
+            }
+        });
+    </script>
+</body>
+</html>
