@@ -117,16 +117,6 @@
                 console.log('Telegram User Data:', window.Telegram.WebApp.initDataUnsafe.user);
                 console.log('Start Parameter:', window.Telegram.WebApp.initDataUnsafe.start_param);
                 
-                // Включаем возможность fullscreen для более новых версий Bot API
-                if (window.Telegram.WebApp.requestFullscreen) {
-                    // Устанавливаем кнопку в верхнем меню для полноэкранного режима
-                    window.Telegram.WebApp.MainButton.setText('На весь экран');
-                    window.Telegram.WebApp.MainButton.show();
-                    window.Telegram.WebApp.MainButton.onClick(function() {
-                        window.Telegram.WebApp.requestFullscreen();
-                    });
-                }
-                
                 // Проверяем, поддерживается ли метод requestWriteAccess
                 if (window.Telegram.WebApp.requestWriteAccess) {
                     window.Telegram.WebApp.requestWriteAccess(function(allowed) {
